@@ -20,10 +20,13 @@ export const useAuthCommand = (
   config: Config,
 ) => {
   // Auto-configure auth type if both GEMINI_BASE_URL and GEMINI_API_KEY are set
-  const shouldAutoUseGemini = !!(process.env.GEMINI_BASE_URL && process.env.GEMINI_API_KEY);
-  const effectiveSelectedAuthType = shouldAutoUseGemini && !settings.merged.selectedAuthType 
-    ? AuthType.USE_GEMINI 
-    : settings.merged.selectedAuthType;
+  const shouldAutoUseGemini = !!(
+    process.env.GEMINI_BASE_URL && process.env.GEMINI_API_KEY
+  );
+  const effectiveSelectedAuthType =
+    shouldAutoUseGemini && !settings.merged.selectedAuthType
+      ? AuthType.USE_GEMINI
+      : settings.merged.selectedAuthType;
 
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(
     effectiveSelectedAuthType === undefined,
@@ -44,7 +47,11 @@ export const useAuthCommand = (
 
       // If we auto-configured the auth type, save it to user settings
       if (shouldAutoUseGemini && !settings.merged.selectedAuthType) {
-        settings.setValue(SettingScope.User, 'selectedAuthType', AuthType.USE_GEMINI);
+        settings.setValue(
+          SettingScope.User,
+          'selectedAuthType',
+          AuthType.USE_GEMINI,
+        );
       }
 
       try {
@@ -60,7 +67,15 @@ export const useAuthCommand = (
     };
 
     void authFlow();
-  }, [isAuthDialogOpen, effectiveSelectedAuthType, shouldAutoUseGemini, settings, config, setAuthError, openAuthDialog]);
+  }, [
+    isAuthDialogOpen,
+    effectiveSelectedAuthType,
+    shouldAutoUseGemini,
+    settings,
+    config,
+    setAuthError,
+    openAuthDialog,
+  ]);
 
   const handleAuthSelect = useCallback(
     async (authType: AuthType | undefined, scope: SettingScope) => {

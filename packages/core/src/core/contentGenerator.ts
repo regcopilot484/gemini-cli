@@ -113,7 +113,10 @@ export async function createContentGenerator(
   sessionId?: string,
 ): Promise<ContentGenerator> {
   const version = process.env.CLI_VERSION || process.version;
-  const httpOptions: any = {
+  const httpOptions: {
+    headers: Record<string, string>;
+    baseUrl?: string;
+  } = {
     headers: {
       'User-Agent': `GeminiCLI/${version} (${process.platform}; ${process.arch})`,
     },
@@ -138,7 +141,7 @@ export async function createContentGenerator(
     if (config.baseUrl) {
       httpOptions.baseUrl = config.baseUrl;
     }
-    
+
     const googleGenAI = new GoogleGenAI({
       apiKey: config.apiKey === '' ? undefined : config.apiKey,
       vertexai: config.vertexai,
