@@ -51,6 +51,7 @@ export type ContentGeneratorConfig = {
   vertexai?: boolean;
   authType?: AuthType | undefined;
   proxy?: string | undefined;
+  baseUrl?: string | undefined;
 };
 
 export function createContentGeneratorConfig(
@@ -58,6 +59,7 @@ export function createContentGeneratorConfig(
   authType: AuthType | undefined,
 ): ContentGeneratorConfig {
   const geminiApiKey = process.env.GEMINI_API_KEY || undefined;
+  const geminiBaseUrl = process.env.GEMINI_BASE_URL || undefined;
   const googleApiKey = process.env.GOOGLE_API_KEY || undefined;
   const googleCloudProject = process.env.GOOGLE_CLOUD_PROJECT || undefined;
   const googleCloudLocation = process.env.GOOGLE_CLOUD_LOCATION || undefined;
@@ -69,6 +71,7 @@ export function createContentGeneratorConfig(
     model: effectiveModel,
     authType,
     proxy: config?.getProxy(),
+    baseUrl: geminiBaseUrl,
   };
 
   // If we are using Google auth or we are in Cloud Shell, there is nothing else to validate for now
@@ -110,7 +113,7 @@ export async function createContentGenerator(
   sessionId?: string,
 ): Promise<ContentGenerator> {
   const version = process.env.CLI_VERSION || process.version;
-  const httpOptions = {
+  const httpOptions: any = {
     headers: {
       'User-Agent': `GeminiCLI/${version} (${process.platform}; ${process.arch})`,
     },
@@ -131,6 +134,11 @@ export async function createContentGenerator(
     config.authType === AuthType.USE_GEMINI ||
     config.authType === AuthType.USE_VERTEX_AI
   ) {
+    // Add baseUrl to httpOptions if provided
+    if (config.baseUrl) {
+      httpOptions.baseUrl = config.baseUrl;
+    }
+    
     const googleGenAI = new GoogleGenAI({
       apiKey: config.apiKey === '' ? undefined : config.apiKey,
       vertexai: config.vertexai,

@@ -60,6 +60,33 @@ describe('createContentGenerator', () => {
     });
     expect(generator).toBe((mockGenerator as GoogleGenAI).models);
   });
+
+  it('should create a GoogleGenAI content generator with custom baseUrl', async () => {
+    const mockGenerator = {
+      models: {},
+    } as unknown;
+    vi.mocked(GoogleGenAI).mockImplementation(() => mockGenerator as never);
+    const generator = await createContentGenerator(
+      {
+        model: 'test-model',
+        apiKey: 'test-api-key',
+        authType: AuthType.USE_GEMINI,
+        baseUrl: 'https://custom-api.example.com',
+      },
+      mockConfig,
+    );
+    expect(GoogleGenAI).toHaveBeenCalledWith({
+      apiKey: 'test-api-key',
+      vertexai: undefined,
+      httpOptions: {
+        headers: {
+          'User-Agent': expect.any(String),
+        },
+        baseUrl: 'https://custom-api.example.com',
+      },
+    });
+    expect(generator).toBe((mockGenerator as GoogleGenAI).models);
+  });
 });
 
 describe('createContentGeneratorConfig', () => {
@@ -112,6 +139,18 @@ describe('createContentGeneratorConfig', () => {
     );
     expect(config.apiKey).toBe('env-google-key');
     expect(config.vertexai).toBe(true);
+  });
+
+  it('should configure baseUrl when GEMINI_BASE_URL is set', async () => {
+    process.env.GEMINI_API_KEY = 'env-gemini-key';
+    process.env.GEMINI_BASE_URL = 'https://custom-api.example.com';
+    const config = await createContentGeneratorConfig(
+      mockConfig,
+      AuthType.USE_GEMINI,
+    );
+    expect(config.baseUrl).toBe('https://custom-api.example.com');
+    expect(config.apiKey).toBe('env-gemini-key');
+    expect(config.vertexai).toBe(false);
   });
 
   it('should configure for Vertex AI using GCP project and location when set', async () => {
